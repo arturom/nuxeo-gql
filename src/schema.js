@@ -75,11 +75,33 @@ const typeDefs = gql`
     entries: DirectoryResults!
   }
 
+  type Schema {
+    name: String
+    prefix: String
+    fieldNames: [String]
+  }
+
+  type Type {
+    name: String!
+    parent: String!
+    facets: [String]!
+    schemas: [String]!
+    schemaObjs: [Schema]!
+  }
+
+  type Config {
+    schemas: [Schema]!
+    schema(name: String!): Schema
+    types: [Type]!
+    type(name: String!): Type
+  }
+
   type Query {
-    me: NuxeoUser
+    me: NuxeoUser!
     user(ref: String!): NuxeoUser
     document(ref: String!): NuxeoDocument
     directory(id: String!): Directory
+    config: Config!
   }
 `;
 

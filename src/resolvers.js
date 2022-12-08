@@ -1,4 +1,10 @@
+const _ = require('lodash');
 const { UserInputError } = require('apollo-server');
+
+function debugLog(x) {
+  console.log(x);
+  return x;
+}
 
 function init(nuxeo) {
   const transformDocument = function (doc) {
@@ -24,7 +30,8 @@ function init(nuxeo) {
     Query: {
       me: () => nuxeo.connect().then((x) => x.user),
       user: (_, { ref }) => nuxeo.users().fetch(ref),
-      document: (_, { ref }) => nuxeo.repository().fetch(ref).then(transformDocument),
+      document: (_, { ref }) =>
+        nuxeo.repository().fetch(ref).then(transformDocument),
       directory: (_, { id }) => {
         const directory = nuxeo.directory(id);
         return {
@@ -36,8 +43,43 @@ function init(nuxeo) {
             }),
         };
       },
-    },
-  };
+      config: () => {
+        const schemasPromise = nuxeo
+          .request("config/schemas/")
+          .get()
+          .then((schemas) =>
+            schemas.map((schema) => ({
+              ...schema,
+              fieldNames: Object.keys(schema.fields),
+            }))
+          );
+
+        const schemasDictPromise = schemasPromise.then((schemas) =>
+          _.keyBy(schemas, "name")
+        );
+
+        const typesDictPromise = nuxeo.request("config/types/").get()
+          .then(({ doctypes }) =>
+            _.mapValues(doctypes, (docType, name) => ({
+              ...docType,
+              name: name,
+              schemaObjs: () =>
+                schemasDictPromise.then((dict) =>
+                  docType.schemas.map((schemaName) => dict[schemaName])
+                ),
+            }))
+          )
+
+
+        return {
+          schemas: schemasPromise,
+          schema: ({ name }) => schemasDictPromise.then((dict) => dict[name]),
+          types: () => typesDictPromise.then((dict) => Object.values(dict)),
+          type: ({ name }) => typesDictPromise.then((dict) => dict[name]),
+        };
+      }
+    }
+  }
 }
 
 module.exports = init;
