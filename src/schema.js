@@ -1,6 +1,13 @@
 const { gql } = require('apollo-server');
 
 const typeDefs = gql`
+  interface Paginated {
+    pageSize: Int
+    pageCount: Int
+    resultsCount: Int
+    numberOfPages: Int
+  }
+
   type NuxeoUserProperties {
     firstName: String
     lastName: String
@@ -14,11 +21,12 @@ const typeDefs = gql`
     properties: NuxeoUserProperties
   }
 
-  interface Paginated {
+  type UserResults implements Paginated {
     pageSize: Int
     pageCount: Int
     resultsCount: Int
     numberOfPages: Int
+    entries: [NuxeoUser]!
   }
 
   type DocumentResults implements Paginated {
@@ -44,8 +52,11 @@ const typeDefs = gql`
     parentRef: String!
     intProperty(xpath: String!): Int
     stringProperty(xpath: String!): String
+    stringArrayProperty(xpath: String!): [String]
     booleanProperty(xpath: String!): Boolean
-    children: DocumentResults!
+    parent(schemas: [String]): NuxeoDocument
+    children(schemas: [String]): DocumentResults!
+    relatedDocuments(xpath: String!, schemas: [String]): DocumentResults!
   }
 
   type DirectoryEntryProperties {
@@ -97,9 +108,10 @@ const typeDefs = gql`
   }
 
   type Query {
-    me: NuxeoUser!
-    user(ref: String!): NuxeoUser
-    document(ref: String!): NuxeoDocument
+    me: NuxeoUserProperties!
+    user(ref: String!): NuxeoUserProperties
+    userSearch(query: String!): UserResults
+    document(ref: String!, schemas: [String]): NuxeoDocument
     directory(id: String!): Directory
     config: Config!
   }

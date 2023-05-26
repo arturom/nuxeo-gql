@@ -4,15 +4,19 @@ const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const config = require('../config');
 
-const nuxeo = new Nuxeo(config);
+async function main() {
+  const nuxeo = await new Nuxeo(config).connect();
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers: resolvers(nuxeo),
-  csrfPrevention: true,
-  cache: 'bounded',
-});
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers: resolvers(nuxeo),
+    csrfPrevention: true,
+    cache: 'bounded',
+  });
 
-server.listen().then(({ url }) => {
-  console.log(`🚀  Server ready at ${url}`);
-});
+  server.listen().then(({ url }) => {
+    console.log(`🚀  Server ready at ${url}`);
+  });
+}
+
+main();
