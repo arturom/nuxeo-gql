@@ -1,4 +1,6 @@
-const { ApolloServer } = require('apollo-server');
+const { ApolloServer } = require('@apollo/server');
+const { startStandaloneServer } = require('@apollo/server/standalone');
+
 const Nuxeo = require('nuxeo');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
@@ -14,9 +16,8 @@ async function main() {
     cache: 'bounded',
   });
 
-  server.listen().then(({ url }) => {
-    console.log(`🚀  Server ready at ${url}`);
-  });
+  const { url } = await startStandaloneServer(server);
+  console.log(`🚀  Server ready at ${url}`);
 }
 
 main();

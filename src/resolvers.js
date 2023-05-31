@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { UserInputError } = require('apollo-server');
+const { UserInputError } = require('@apollo/server');
 
 const resolveDocumentProperty = (doc, { xpath }) => doc.get(xpath);
 
