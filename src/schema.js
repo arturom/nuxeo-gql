@@ -1,5 +1,3 @@
-const { gql } = require('@apollo/server');
-
 const typeDefs = `#graphql
   interface Paginated {
     pageSize: Int

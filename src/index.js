@@ -1,22 +1,26 @@
-const { ApolloServer } = require('@apollo/server');
-const { startStandaloneServer } = require('@apollo/server/standalone');
+const { ApolloServer } = require("@apollo/server");
+const { startStandaloneServer } = require("@apollo/server/standalone");
+const Nuxeo = require("nuxeo");
 
-const Nuxeo = require('nuxeo');
-const typeDefs = require('./schema');
-const resolvers = require('./resolvers');
-const config = require('../config');
+const typeDefs = require("./schema");
+const resolvers = require("./resolvers");
+const config = require("../config");
 
 async function main() {
   const nuxeo = await new Nuxeo(config).connect();
 
   const server = new ApolloServer({
     typeDefs,
-    resolvers: resolvers(nuxeo),
+    resolvers,
     csrfPrevention: true,
-    cache: 'bounded',
+    cache: "bounded",
   });
 
-  const { url } = await startStandaloneServer(server);
+  const { url } = await startStandaloneServer(server, {
+    context: () => ({
+      nuxeo
+    }),
+  });
   console.log(`🚀  Server ready at ${url}`);
 }
 
