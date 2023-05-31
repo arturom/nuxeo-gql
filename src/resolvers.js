@@ -70,12 +70,21 @@ function init(nuxeo) {
       },
       relatedDocuments: (doc, { xpath, schemas }) => {
         const ids = doc.get(xpath);
-        if (!ids || !ids.length) {
+        if (!ids) {
+          return null
+        } else if (!ids.length) {
           return [];
         }
         const query = `SELECT * FROM DOCUMENT WHERE ecm:uuid IN (${ids.map((id) => `'${id}'`).join(', ')})`;
         return nuxeo.repository('default').query({ query, queryLanguage: 'NXQL' }, { schemas });
       },
+      userProperty: (doc, {xpath}) => {
+        const username = doc.get(xpath);
+        if (!username) {
+          return null;
+        }
+        return nuxeo.users().fetch(username).then(({ properties }) => properties);
+      }
     },
   };
 }

@@ -57,6 +57,7 @@ const typeDefs = gql`
     parent(schemas: [String]): NuxeoDocument
     children(schemas: [String]): DocumentResults!
     relatedDocuments(xpath: String!, schemas: [String]): DocumentResults!
+    userProperty(xpath: String!): NuxeoUserProperties
   }
 
   type DirectoryEntryProperties {
