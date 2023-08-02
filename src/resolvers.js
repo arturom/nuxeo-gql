@@ -1,5 +1,6 @@
-const _ = require("lodash");
+const { keyBy, mapValues } = require("lodash");
 const { UserInputError } = require("@apollo/server");
+const DataLoader = require("dataloader");
 
 const resolveDocumentProperty = (doc, { xpath }) => doc.get(xpath);
 
@@ -15,6 +16,9 @@ module.exports = {
       nuxeo.request(`user/search`).queryParams({ q: query }).get(),
     document: (_, { ref, schemas }, { nuxeo }) =>
       nuxeo.repository().fetch(ref, { schemas }),
+    directories: ((_a, _b, {nuxeo}) => 
+      nuxeo.request(`directory`).get().then((res) => res.entries)
+    ),
     directory: (_, { id }, { nuxeo }) => {
       const directory = nuxeo.directory(id);
       return {
@@ -38,14 +42,14 @@ module.exports = {
         );
 
       const schemasDictPromise = schemasPromise.then((schemas) =>
-        _.keyBy(schemas, "name")
+        keyBy(schemas, "name")
       );
 
       const typesDictPromise = nuxeo
         .request("config/types/")
         .get()
         .then(({ doctypes }) =>
-          _.mapValues(doctypes, (docType, name) => ({
+          mapValues(doctypes, (docType, name) => ({
             ...docType,
             name: name,
             schemaObjs: () =>
